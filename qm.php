@@ -1,7 +1,8 @@
 <?php
 define("SIGNKEY","d3dGiJc651gSQ8w1");
 
-function getQmHeaders($signStr){
+function getQmHeaders(){
+	$signStr = md5("AUTHORIZATION=app-version=70720application-id=com.****.readerchannel=unknownnet-env=1platform=androidqm-params=reg=0".SIGNKEY);
 	$headers = [
 		'AUTHORIZATION;',
 		'app-version: 70720',
@@ -17,14 +18,67 @@ function getQmHeaders($signStr){
 	return $headers;
 }
 
+// $tab girl,boy,publish
+function getQmAllCategory($tab='publish'){
+	$sign = md5("cache_ver=0gender=2tab_type=${tab}type=category_all".SIGNKEY);
+	$url = "https://api-bc.wtzw.com/api/v4/category-rank/index?type=category_all&gender=2&tab_type=${tab}&cache_ver=0&sign=${sign}";
+	$headers = getQmHeaders();
+
+	$curl = curl_init();
+	curl_setopt_array($curl, array(
+	   CURLOPT_URL => $url,
+	   CURLOPT_RETURNTRANSFER => true,
+	   CURLOPT_ENCODING => '',
+	   CURLOPT_MAXREDIRS => 10,
+	   CURLOPT_TIMEOUT => 0,
+	   CURLOPT_FOLLOWLOCATION => true,
+	   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+	   CURLOPT_SSL_VERIFYPEER => false,
+	   CURLOPT_SSL_VERIFYHOST => false,
+	   CURLOPT_CUSTOMREQUEST => 'GET',
+	   CURLOPT_HTTPHEADER => $headers,
+	));
+
+	$html = curl_exec($curl);
+	curl_close($curl);
+
+	return $html;
+}
+
+function getQmCategoryList($gid=2, $cid=1, $page=1) {
+	$page = @intval($page) < 1 ? 1 : @intval($page);
+	$keywords = urlencode($keyword);
+	$sign = md5("category_id=${cid}gender=${gid}need_category=1need_filters=0over=-99page=${page}sort=0words=-99".SIGNKEY);
+	$url = "https://api-bc.wtzw.com/api/v4/category/get-list?need_filters=0&need_category=1&words=-99&over=-99&gender=${gid}&category_id=${cid}&sort=0&page=${page}&sign=${sign}";
+	$headers = getQmHeaders();
+
+	$curl = curl_init();
+	curl_setopt_array($curl, array(
+	   CURLOPT_URL => $url,
+	   CURLOPT_RETURNTRANSFER => true,
+	   CURLOPT_ENCODING => '',
+	   CURLOPT_MAXREDIRS => 10,
+	   CURLOPT_TIMEOUT => 0,
+	   CURLOPT_FOLLOWLOCATION => true,
+	   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+	   CURLOPT_SSL_VERIFYPEER => false,
+	   CURLOPT_SSL_VERIFYHOST => false,
+	   CURLOPT_CUSTOMREQUEST => 'GET',
+	   CURLOPT_HTTPHEADER => $headers,
+	));
+
+	$html = curl_exec($curl);
+	curl_close($curl);
+
+	return $html;
+}
+
 function getQmSearchList($keyword, $page=1) {
 	$page = @intval($page) < 1 ? 1 : @intval($page);
 	$keywords = urlencode($keyword);
 	$sign = md5("page=${page}wd=${keyword}".SIGNKEY);
-	$signStr = md5("AUTHORIZATION=app-version=70720application-id=com.****.readerchannel=unknownnet-env=1platform=androidqm-params=reg=0".SIGNKEY);
 	$url = "https://api-bc.wtzw.com/api/v5/search/words?page=${page}&wd=${keywords}&sign=${sign}";
-	//echo $signStr;exit();
-	$headers = getQmHeaders($signStr);
+	$headers = getQmHeaders();
 
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
@@ -49,9 +103,8 @@ function getQmSearchList($keyword, $page=1) {
 
 function getQmBookDetail($bid) {
 	$sign = md5("id=${bid}imei_ip=3684466020teeny_mode=0".SIGNKEY);
-	$signStr = md5("AUTHORIZATION=app-version=70720application-id=com.****.readerchannel=unknownnet-env=1platform=androidqm-params=reg=0".SIGNKEY);
 	$url = "https://api-bc.wtzw.com/api/v4/book/detail?id=${bid}&imei_ip=3684466020&teeny_mode=0&sign=${sign}";
-	$headers = getQmHeaders($signStr);
+	$headers = getQmHeaders();
 
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
@@ -76,9 +129,8 @@ function getQmBookDetail($bid) {
 
 function getQmBookChapterList($bid) {
 	$sign = md5("id=${bid}".SIGNKEY);
-	$signStr = md5("AUTHORIZATION=app-version=70720application-id=com.****.readerchannel=unknownnet-env=1platform=androidqm-params=reg=0".SIGNKEY);
 	$url = "https://api-ks.wtzw.com/api/v1/chapter/chapter-list?id=${bid}&sign=${sign}";
-	$headers = getQmHeaders($signStr);
+	$headers = getQmHeaders();
 
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
@@ -103,9 +155,8 @@ function getQmBookChapterList($bid) {
 
 function getQmBookContEncode($bid, $cid){
 	$sign = md5("chapterId=${cid}id=${bid}".SIGNKEY);
-	$signStr = md5("AUTHORIZATION=app-version=70720application-id=com.****.readerchannel=unknownnet-env=1platform=androidqm-params=reg=0".SIGNKEY);
 	$url = "https://api-ks.wtzw.com/api/v1/chapter/content?id=${bid}&chapterId=${cid}&sign=${sign}";
-	$headers = getQmHeaders($signStr);
+	$headers = getQmHeaders();
 
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
@@ -149,7 +200,9 @@ function getQmBookContDecode($bid, $cid) {
 	return $decodeTxt;
 }
 
-print_r(json_decode(getQmSearchList("世子先别死", 2), true));exit();
+print_r(json_decode(getQmAllCategory('boy'), true));exit();
+print_r(json_decode(getQmCategoryList(2, 1, 1), true));exit();
+//print_r(json_decode(getQmSearchList("世子先别死", 2), true));exit();
 
 $bid = "1830570";
 //echo getQmBookDetail($bid);exit();
